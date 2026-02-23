@@ -1,13 +1,22 @@
-require("dotenv").config();
-const app = require("./app");
-const connectDB = require("./config/db");
+const express = require("express");
+const dotenv = require("dotenv");
+const ConnectDB = require("./configs/db");
+const authRoutes = require("./routes/authRoutes");
+const eventRoutes = require("./routes/eventRoutes");
+dotenv.config();
+const app = express();
 
-const PORT = process.env.PORT || 5000;
+app.use(express.json());
+const PORT = process.env.PORT || 5001;
+ConnectDB();
 
-// Connect to MongoDB
-connectDB();
+// app.get("/test", (req, res) => {
+//   res.json({ message: "Api is running" });
+// });
 
-// Start server
+app.use("/api/auth", authRoutes);
+app.use("/api/events", eventRoutes);
+
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
