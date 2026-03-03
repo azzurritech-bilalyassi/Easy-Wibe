@@ -30,6 +30,9 @@
                 "password": {
                   "example": "any"
                 },
+                "location": {
+                  "example": "any"
+                },
                 "role": {
                   "example": "any"
                 }
