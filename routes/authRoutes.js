@@ -7,7 +7,7 @@ const {
   ResetPassword,
   CheckUserByEmail,
   googleLogin,
-  appleLogin,
+//   appleLogin,
 } = require("../controllers/authController");
 const { auth } = require("../middleware/authMiddleware");
 
@@ -20,6 +20,6 @@ router.post("/forgot-password", ForgotPassword);
 router.post("/reset-password/:token", ResetPassword);
 router.post("/check-user", CheckUserByEmail);
 router.post("/google-login", googleLogin);
-router.post("/apple-login", appleLogin);
+// router.post("/apple-login", appleLogin);
 
 module.exports = router;

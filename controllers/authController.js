@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 // const CLIENT_ID =
 //   "774334622287-lnfclbt9ndpfnhab8qj50mjdj2gkisse.apps.googleusercontent.com";
 // const client = new OAuth2Client(CLIENT_ID);
-const jwksClient = require("jwks-rsa");
+// const jwksClient = require("jwks-rsa");
 const { sendEmail } = require("../utils/sendEmail");
 const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
 
@@ -213,45 +213,45 @@ const googleLogin = async (req, res) => {
   }
 };
 
-const appleLogin = async (req, res) => {
-  try {
-    const { identityToken } = req.body;
+// const appleLogin = async (req, res) => {
+//   try {
+//     const { identityToken } = req.body;
 
-    if (!identityToken) {
-      return res.status(400).json({ error: "Identity token is required" });
-    }
+//     if (!identityToken) {
+//       return res.status(400).json({ error: "Identity token is required" });
+//     }
 
-    // Apple public keys
-    const client = jwksClient({
-      jwksUri: "https://appleid.apple.com/auth/keys",
-    });
+//     // Apple public keys
+//     const client = jwksClient({
+//       jwksUri: "https://appleid.apple.com/auth/keys",
+//     });
 
-    function getKey(header, callback) {
-      client.getSigningKey(header.kid, function (err, key) {
-        const signingKey = key.getPublicKey();
-        callback(null, signingKey);
-      });
-    }
+//     function getKey(header, callback) {
+//       client.getSigningKey(header.kid, function (err, key) {
+//         const signingKey = key.getPublicKey();
+//         callback(null, signingKey);
+//       });
+//     }
 
-    // Verify JWT
-    jwt.verify(identityToken, getKey, {}, (err, payload) => {
-      if (err) return res.status(401).json({ error: "Invalid Apple token" });
+//     // Verify JWT
+//     jwt.verify(identityToken, getKey, {}, (err, payload) => {
+//       if (err) return res.status(401).json({ error: "Invalid Apple token" });
 
-      // payload me user info hoti hai
-      const user = {
-        appleId: payload.sub,
-        email: payload.email,
-        name: payload.name || null, // Apple may not provide name on subsequent logins
-      };
+//       // payload me user info hoti hai
+//       const user = {
+//         appleId: payload.sub,
+//         email: payload.email,
+//         name: payload.name || null, // Apple may not provide name on subsequent logins
+//       };
 
-      // TODO: Save user in DB or create JWT
-      return res.status(200).json({ user });
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Something went wrong" });
-  }
-};
+//       // TODO: Save user in DB or create JWT
+//       return res.status(200).json({ user });
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ error: "Something went wrong" });
+//   }
+// };
 
 module.exports = {
   RegisterUser,
@@ -261,5 +261,5 @@ module.exports = {
   ResetPassword,
   CheckUserByEmail,
   googleLogin,
-  appleLogin,
+  // appleLogin,
 };
