@@ -105,10 +105,44 @@ const ResetPassword = async (req, res) => {
   }
 };
 
+const CheckUserByEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        status: false,
+        message: "Email is required",
+      });
+    }
+
+    const user = await User.findOne({ email }).select("-password");
+
+    if (user) {
+      return res.status(200).json({
+        status: true,
+        message: "User exists",
+        user,
+      });
+    } else {
+      return res.status(404).json({
+        status: false,
+        message: "User does not exist",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   RegisterUser,
   LoginUser,
   LogoutUser,
   ForgotPassword,
   ResetPassword,
+  CheckUserByEmail,
 };
