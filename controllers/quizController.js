@@ -1,4 +1,5 @@
 const Question = require("../models/Question");
+const User = require("../models/User");
 const UserAnswer = require("../models/UserAnswer");
 
 const getQuestions = async (req, res) => {
@@ -16,7 +17,7 @@ const submitAnswer = async (req, res) => {
 
     // Update if exists, otherwise create
     const answer = await UserAnswer.findOneAndUpdate(
-      { userId: req.user._id, questionId },
+      { userId: req.user.id, questionId },
       { selectedOption },
       { upsert: true, new: true },
     );
@@ -29,30 +30,86 @@ const submitAnswer = async (req, res) => {
 
 const submitQuiz = async (req, res) => {
   try {
-    const answers = await UserAnswer.find({ userId: req.user._id });
-
-    if (answers.length === 0)
-      return res.status(400).json({ message: "No answers found" });
-
-    // Mood Calculation: Count frequency of each mood
-    const moodCount = {};
-    answers.forEach((a) => {
-      moodCount[a.selectedOption] = (moodCount[a.selectedOption] || 0) + 1;
-    });
-
-    // Select mood with highest count
-    const moodResult = Object.keys(moodCount).reduce((a, b) =>
-      moodCount[a] > moodCount[b] ? a : b,
+    const answers = await UserAnswer.find({ userId: req.user.id }).populate(
+      "questionId",
     );
 
-    // Save mood result to user
-    req.user.moodResult = moodResult;
-    req.user.isOnboarded = true;
-    await req.user.save();
+    if (answers.length < 6) {
+      return res.status(400).json({ message: "Quiz non completato" });
+    }
 
-    res.json({ message: "Quiz completed", moodResult });
+    const profile = {
+      energy: null,
+      social: null,
+      novelty: null,
+      environment: null,
+      leadership: null,
+      motivation: null,
+    };
+
+    // Case-insensitive aur safe matching
+    answers.forEach((ans) => {
+      const cat = ans.questionId?.category?.trim(); // null/undefined se bachao
+
+      if (!cat) return; // agar category nahi mila to skip
+
+      const catLower = cat.toLowerCase();
+
+      if (catLower.includes("energia")) profile.energy = ans.selectedOption;
+      if (catLower.includes("social")) profile.social = ans.selectedOption;
+      if (catLower.includes("novità") || catLower.includes("novita"))
+        profile.novelty = ans.selectedOption;
+      if (catLower.includes("ambiente"))
+        profile.environment = ans.selectedOption;
+      if (catLower.includes("gruppo")) profile.leadership = ans.selectedOption;
+      if (catLower.includes("identità") || catLower.includes("identita"))
+        profile.motivation = ans.selectedOption;
+    });
+
+    // Basic validation – important categories check
+    if (!profile.energy || !profile.social) {
+      return res.status(400).json({
+        message: "Alcune risposte mancanti o non valide",
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Mood calculation (sirf tumhare diye hue rules + default)
+    let mood = "Chill Explorer";
+
+    if (profile.energy === "HighEnergy" && profile.social === "Group") {
+      mood = "Party Animal";
+    }
+    if (profile.energy === "LowEnergy" && profile.social === "Alone") {
+      mood = "Cozy Night In";
+    }
+    if (
+      profile.environment === "Outdoors" &&
+      profile.novelty === "HighNovelty"
+    ) {
+      mood = "Adventure Seeker";
+    }
+    if (profile.motivation === "Relax" || profile.motivation === "SelfCare") {
+      mood = "Recharge Mode";
+    }
+
+    // Save to user
+    user.moodResult = mood;
+    user.isOnboarded = true;
+    await user.save();
+
+    res.json({
+      message: "Quiz completato!",
+      mood,
+    });
   } catch (err) {
-    res.status(500).json({ message: "Server Error" });
+    console.error("SubmitQuiz Error:", err.message);
+    res.status(500).json({ message: "Errore server, riprova più tardi" });
   }
 };
 

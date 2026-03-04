@@ -10,13 +10,14 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendEmail = async ({ to, subject, html }) => { // ⚡ html instead of text
+const sendEmail = async ({ to, subject, html }) => {
+  // ⚡ html instead of text
   try {
     const info = await transporter.sendMail({
       from: `"Support" <${process.env.EMAIL_USER}>`,
       to,
       subject,
-      html,  
+      html,
     });
 
     console.log("✅ Email sent:", info.messageId);

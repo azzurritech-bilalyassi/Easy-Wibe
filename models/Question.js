@@ -2,14 +2,15 @@
 const mongoose = require("mongoose");
 
 const questionSchema = new mongoose.Schema({
-  question: { type: String, required: true },
+ question: { type: String, required: true },
+  category: { type: String, required: true }, 
   options: [
     {
-      text: String,      // Option text
-      value: String      // Mood value: e.g., "Happy", "Sad", "Party"
-    }
+      text: { type: String, required: true },
+      value: { type: String, required: true, unique: false },
+    },
   ],
-  order: { type: Number, required: true } // Question order
+  order: { type: Number, required: true, unique: true },
 });
 
 module.exports = mongoose.model("Question", questionSchema);
