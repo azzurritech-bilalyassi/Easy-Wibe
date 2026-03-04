@@ -26,12 +26,10 @@ const eventSchema = new mongoose.Schema(
     moodCategory: {
       type: String,
       required: true,
-      enum: ["Happy", "Party", "Chill", "Romantic"],
     },
     companyTags: {
       type: String,
       required: true,
-      enum: ["Alone", "Friends"],
     },
 
     status: {
@@ -40,17 +38,12 @@ const eventSchema = new mongoose.Schema(
       default: "draft",
     },
 
-    isFavorite: {
-      userId: {
+    favorites: [
+      {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        default: null,
       },
-      value: {
-        type: Boolean,
-        default: false,
-      },
-    },
+    ],
 
     eventDate: {
       type: Date,

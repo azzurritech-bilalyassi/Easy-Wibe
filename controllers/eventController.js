@@ -3,10 +3,6 @@ const Event = require("../models/Event");
 // 🧑‍💼 CREATE EVENT (Draft by default)
 const createEvent = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ message: "Only admins can create events" });
-    }
-
     const {
       title,
       description,
@@ -15,8 +11,11 @@ const createEvent = async (req, res) => {
       moodCategory,
       companyTags,
       eventDate,
-      image,
     } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({ message: "Event image is required" });
+    }
 
     const event = await Event.create({
       title,
@@ -26,10 +25,13 @@ const createEvent = async (req, res) => {
       moodCategory,
       companyTags,
       eventDate,
-      image,
+      image: req.file.path, // ✅ image save ho rahi hai
     });
 
-    res.status(201).json({ message: "Event created successfully", event });
+    res.status(201).json({
+      message: "Event created successfully",
+      event,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
@@ -43,15 +45,22 @@ const updateEvent = async (req, res) => {
       return res.status(403).json({ message: "Only admins can update events" });
     }
 
-    const { eventId } = req.params;
+    const { id } = req.params;
     const updates = req.body;
 
-    const event = await Event.findByIdAndUpdate(eventId, updates, {
+    const event = await Event.findByIdAndUpdate(id, updates, {
       new: true,
     });
+
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    res.json({ message: "Event updated successfully", event });
+    if (req.file) {
+      event.image = req.file.path;
+    }
+
+    const updatedEvent = await event.save();
+
+    res.json({ message: "Event updated successfully", updatedEvent });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
@@ -75,32 +84,30 @@ const getAllEvents = async (req, res) => {
 
 const toggleFavorite = async (req, res) => {
   try {
-    const eventId = req.params.id;
+    const event = await Event.findById(req.params.id);
     const userId = req.user.id;
 
-    const event = await Event.findById(eventId);
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    if (
-      event.isFavorite.userId &&
-      event.isFavorite.userId.toString() === userId
-    ) {
-      event.isFavorite = { userId: null, value: false };
-      event.totalFavorites = Math.max(0, event.totalFavorites - 1);
+    const index = event.favorites.indexOf(userId);
+
+    if (index === -1) {
+      event.favorites.push(userId);
     } else {
-      event.isFavorite = { userId, value: true };
-      event.totalFavorites += 1;
+      event.favorites.splice(index, 1);
     }
 
+    event.totalFavorites = event.favorites.length;
+
     await event.save();
-    res.status(200).json({
-      message: "Favorite status updated",
-      isFavorite: event.isFavorite,
+
+    res.json({
+      message: "Favorite updated",
       totalFavorites: event.totalFavorites,
+      isFavorite: event.favorites.includes(userId),
     });
-  } catch (error) {
-    console.error("Error toggling favorite:", error);
-    res.status(500).json({ message: "Server error" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -132,6 +139,20 @@ const getPublishedEvents = async (req, res) => {
   }
 };
 
+const getAllLocations = async (req, res) => {
+  try {
+    const locations = await Event.distinct("location", {
+      status: "published",
+    });
+
+    res.status(200).json({
+      locations,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   createEvent,
   updateEvent,
@@ -139,4 +160,5 @@ module.exports = {
   getPublishedEvents,
   getAllEvents,
   toggleFavorite,
+  getAllLocations,
 };

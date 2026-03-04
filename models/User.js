@@ -22,6 +22,10 @@ const UserSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    profileImage: {
+      type: String,
+      default: "",
+    },
     role: {
       type: String,
       enum: ["user", "admin"],
@@ -34,7 +38,6 @@ const UserSchema = new mongoose.Schema(
     resetPasswordToken: String,
     resetPasswordExpire: Date,
     moodResult: String,
-    isOnboarded: { type: Boolean, default: false },
   },
   {
     timestamps: true,

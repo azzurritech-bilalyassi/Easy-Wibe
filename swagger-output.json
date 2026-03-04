@@ -274,12 +274,6 @@
             "schema": {
               "type": "object",
               "properties": {
-                "name": {
-                  "example": "any"
-                },
-                "email": {
-                  "example": "any"
-                },
                 "oldPassword": {
                   "example": "any"
                 },
@@ -344,9 +338,6 @@
                 },
                 "eventDate": {
                   "example": "any"
-                },
-                "image": {
-                  "example": "any"
                 }
               }
             }
@@ -355,6 +346,9 @@
         "responses": {
           "201": {
             "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "401": {
             "description": "Unauthorized"
@@ -517,6 +511,19 @@
         }
       }
     },
+    "/api/events/locations": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/quiz/questions": {
       "get": {
         "description": "",
@@ -540,7 +547,7 @@
         }
       }
     },
-    "/api/quiz/answer": {
+    "/api/quiz/submit": {
       "post": {
         "description": "",
         "parameters": [
@@ -555,37 +562,11 @@
             "schema": {
               "type": "object",
               "properties": {
-                "questionId": {
-                  "example": "any"
-                },
-                "selectedOption": {
+                "answers": {
                   "example": "any"
                 }
               }
             }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/quiz/submit": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
@@ -597,32 +578,6 @@
           },
           "401": {
             "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/quiz/result": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
           },
           "500": {
             "description": "Internal Server Error"

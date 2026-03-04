@@ -13,7 +13,10 @@ const userAnswerSchema = new mongoose.Schema(
       ref: "Question",
       required: true,
     },
-    selectedOption: { type: String, required: true }, // value of the option
+    selectedOption: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    },
   },
   { timestamps: true },
 );
