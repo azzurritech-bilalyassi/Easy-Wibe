@@ -3,21 +3,18 @@ const {
   createEvent,
   updateEvent,
   publishEvent,
-  getAdminEvents,
-  getPublishedEvents
+  getPublishedEvents,
+  getAllEvents,
+  toggleFavorite,
 } = require("../controllers/eventController");
 
 const { auth, adminOnly } = require("../middleware/authMiddleware");
 
-
-// 🧑‍💼 ADMIN ROUTES
 router.post("/", auth, adminOnly, createEvent);
 router.put("/:id", auth, adminOnly, updateEvent);
+router.get("/", auth, adminOnly, getAllEvents);
+router.put("/:id/favorite", auth, toggleFavorite);
 router.patch("/:id/publish", auth, adminOnly, publishEvent);
-router.get("/admin/all", auth, adminOnly, getAdminEvents);
-
-
-// 👤 USER ROUTE
 router.get("/published", auth, getPublishedEvents);
 
 module.exports = router;

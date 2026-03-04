@@ -5,6 +5,7 @@ const ConnectDB = require("./configs/db");
 const authRoutes = require("./routes/authRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const profileRoutes = require("./routes/profileRoutes");
+const quizRoutes = require("./routes/quizRoutes");
 const swaggerUi = require("swagger-ui-express");
 const swaggerFile = require("./swagger-output.json");
 
@@ -29,6 +30,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/quiz", quizRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

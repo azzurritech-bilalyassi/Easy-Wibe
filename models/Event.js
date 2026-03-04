@@ -10,11 +10,29 @@ const eventSchema = new mongoose.Schema(
 
     location: {
       type: String,
-      default: "",
+      required: true,
     },
 
-    moodTags: [String], // chill, social etc (future filtering)
-    companyTags: [String], // alone, friends
+    price: {
+      type: Number,
+      default: 0,
+    },
+
+    totalFavorites: {
+      type: Number,
+      default: 0,
+    },
+
+    moodCategory: {
+      type: String,
+      required: true,
+      enum: ["Happy", "Party", "Chill", "Romantic"],
+    },
+    companyTags: {
+      type: String,
+      required: true,
+      enum: ["Alone", "Friends"],
+    },
 
     status: {
       type: String,
@@ -22,9 +40,25 @@ const eventSchema = new mongoose.Schema(
       default: "draft",
     },
 
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+    isFavorite: {
+      userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
+      value: {
+        type: Boolean,
+        default: false,
+      },
+    },
+
+    eventDate: {
+      type: Date,
+      required: true,
+    },
+    image: {
+      type: String,
+      required: true,
     },
   },
   { timestamps: true },
