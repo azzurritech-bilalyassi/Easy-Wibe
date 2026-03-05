@@ -4,12 +4,11 @@ const fetch = require("node-fetch");
 // const { OAuth2Client } = require("google-auth-library");
 const generateToken = require("../utils/generateToken");
 const jwt = require("jsonwebtoken");
+const jwkToPem = require("jwk-to-pem");
 
-// const CLIENT_ID =
-//   "774334622287-lnfclbt9ndpfnhab8qj50mjdj2gkisse.apps.googleusercontent.com";
-// const client = new OAuth2Client(CLIENT_ID);
-// const jwksClient = require("jwks-rsa");
 const { sendEmail } = require("../utils/sendEmail");
+const downloadImage = require("../utils/downloadImage");
+const { default: axios } = require("axios");
 const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
 
 const RegisterUser = async (req, res) => {
@@ -33,6 +32,7 @@ const RegisterUser = async (req, res) => {
       password,
       location: location || "",
       role: role || "user",
+      provider: "local",
     });
 
     if (user) {
@@ -182,76 +182,139 @@ const googleLogin = async (req, res) => {
     const { token } = req.body;
 
     if (!token) {
-      return res.status(400).json({ error: "Access token is required" });
+      return res.status(400).json({ error: "id_token is required" });
     }
 
-    // Fetch user info from Google
-    const response = await fetch(GOOGLE_USERINFO_URL, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      return res.status(401).json({ error: "Invalid Google access token" });
-    }
+    const response = await fetch(
+      `https://oauth2.googleapis.com/tokeninfo?id_token=${token}`,
+    );
 
     const payload = await response.json();
 
-    // User info
-    const user = {
-      googleId: payload.sub,
-      name: payload.name,
-      email: payload.email,
-      picture: payload.picture,
-    };
-    // TODO: Save user to DB or create JW
-    return res.status(200).json({ user });
+    if (!response.ok) {
+      return res.status(401).json({
+        error: "Invalid Google token",
+        details: payload,
+      });
+    }
+
+    const { sub, name, email, picture } = payload;
+
+    // 📥 Download Google profile image
+    const savedImagePath = await downloadImage(picture);
+
+    let user = await User.findOne({ email });
+
+    if (user) {
+      if (!user.googleId) {
+        user.googleId = sub;
+      }
+
+      if (!user.profileImage) {
+        user.profileImage = savedImagePath;
+      }
+
+      await user.save();
+    } else {
+      user = await User.create({
+        googleId: sub,
+        name,
+        email,
+        profileImage: savedImagePath,
+        password: Math.random().toString(36).slice(-8),
+        provider: "google",
+      });
+    }
+
+    const jwtToken = generateToken(user);
+
+    res.status(200).json({
+      message: "Google login successful",
+      token: jwtToken,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        profileImage: user.profileImage,
+        role: user.role,
+      },
+    });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Something went wrong" });
+    console.error("Google Login Error:", err);
+
+    return res.status(500).json({
+      error: "Something went wrong",
+    });
   }
 };
 
-// const appleLogin = async (req, res) => {
-//   try {
-//     const { identityToken } = req.body;
+const appleLogin = async (req, res) => {
+  try {
+    const token = req.body.token;
 
-//     if (!identityToken) {
-//       return res.status(400).json({ error: "Identity token is required" });
-//     }
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: "Apple token is required",
+      });
+    }
 
-//     // Apple public keys
-//     const client = jwksClient({
-//       jwksUri: "https://appleid.apple.com/auth/keys",
-//     });
+    // Apple public keys fetch karo
+    const appleKeys = await axios.get("https://appleid.apple.com/auth/keys");
 
-//     function getKey(header, callback) {
-//       client.getSigningKey(header.kid, function (err, key) {
-//         const signingKey = key.getPublicKey();
-//         callback(null, signingKey);
-//       });
-//     }
+    // Decode header to find correct key
+    const decodedHeader = jwt.decode(token, { complete: true });
+    if (!decodedHeader) {
+      return res.status(400).json({ success: false, message: "Invalid token" });
+    }
 
-//     // Verify JWT
-//     jwt.verify(identityToken, getKey, {}, (err, payload) => {
-//       if (err) return res.status(401).json({ error: "Invalid Apple token" });
+    const key = appleKeys.data.keys.find(
+      (k) => k.kid === decodedHeader.header.kid,
+    );
+    if (!key) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid Apple token" });
+    }
 
-//       // payload me user info hoti hai
-//       const user = {
-//         appleId: payload.sub,
-//         email: payload.email,
-//         name: payload.name || null, // Apple may not provide name on subsequent logins
-//       };
+    // JWK to PEM
+    const publicKey = jwkToPem(key);
 
-//       // TODO: Save user in DB or create JWT
-//       return res.status(200).json({ user });
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({ error: "Something went wrong" });
-//   }
-// };
+    // Verify token
+    const payload = jwt.verify(token, publicKey, { algorithms: ["RS256"] });
+
+    const { sub, email, name } = payload;
+
+    // User find by appleId
+    let user = await User.findOne({ appleId: sub });
+
+    // Agar user exist nahi karta to create karo
+    if (!user) {
+      user = await User.create({
+        appleId: sub,
+        email: email || "",
+        name: name || email.split("@")[0],
+        password: Math.random().toString(36).slice(-8),
+        provider: "apple",
+      });
+    }
+
+    // JWT generate karo
+    const jwtToken = generateToken(user);
+
+    res.json({
+      success: true,
+      token: jwtToken,
+      user,
+    });
+  } catch (error) {
+    console.error("Apple Login Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Apple login failed",
+    });
+  }
+};
 
 module.exports = {
   RegisterUser,
@@ -261,5 +324,5 @@ module.exports = {
   ResetPassword,
   CheckUserByEmail,
   googleLogin,
-  // appleLogin,
+  appleLogin,
 };

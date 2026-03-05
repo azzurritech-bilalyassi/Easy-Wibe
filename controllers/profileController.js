@@ -3,9 +3,11 @@ const bcrypt = require("bcryptjs");
 
 const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password");
+    const user = await User.findById(req.user.id).select("-password -googleId");
 
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     res.status(200).json(user);
   } catch (err) {

@@ -17,7 +17,7 @@ router.put("/:id", auth, adminOnly, upload.single("image"), updateEvent);
 router.get("/", auth, adminOnly, getAllEvents);
 router.put("/:id/favorite", auth, toggleFavorite);
 router.patch("/:id/publish", auth, adminOnly, publishEvent);
-router.get("/published", auth, getPublishedEvents);
+router.get("/published", getPublishedEvents);
 router.get("/locations", getAllLocations);
 
 module.exports = router;

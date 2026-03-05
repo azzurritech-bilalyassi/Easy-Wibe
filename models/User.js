@@ -21,6 +21,7 @@ const UserSchema = new mongoose.Schema(
     location: {
       type: String,
       trim: true,
+      default: "",
     },
     profileImage: {
       type: String,
@@ -38,6 +39,27 @@ const UserSchema = new mongoose.Schema(
     resetPasswordToken: String,
     resetPasswordExpire: Date,
     moodResult: String,
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    appleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    provider: {
+      type: String,
+      enum: ["local", "google", "apple"],
+      default: "local",
+    },
+    subscription: {
+      plan: { type: String, default: "free" }, // free, basic, premium etc.
+      status: { type: String, default: "inactive" }, // active / inactive / canceled
+      startedAt: { type: Date }, // subscription start date
+      expiresAt: { type: Date }, // subscription end date
+    },
   },
   {
     timestamps: true,

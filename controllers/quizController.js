@@ -22,7 +22,7 @@ const submitQuiz = async (req, res) => {
   try {
     const { answers } = req.body;
 
-    if (!answers || answers.length < 6) {
+    if (!answers || answers.length < 5) {
       return res.status(400).json({ message: "Quiz not completed" });
     }
 
@@ -61,11 +61,11 @@ const submitQuiz = async (req, res) => {
     });
 
     // Validation
-    if (!profile.energy || !profile.social) {
-      return res.status(400).json({
-        message: "Missing required answers",
-      });
-    }
+    // if (!profile.energy || !profile.social) {
+    //   return res.status(400).json({
+    //     message: "Missing required answers",
+    //   });
+    // }
 
     // 🎯 Mood Logic
     let mood = "Chill Explorer";
