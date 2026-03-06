@@ -3,7 +3,9 @@ const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "mail.azzurri.pk", // your SMTP host
+  port: 465,               // secure port
+  secure: true,            // true for 465, false for other ports
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -11,10 +13,9 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendEmail = async ({ to, subject, html }) => {
-  // ⚡ html instead of text
   try {
     const info = await transporter.sendMail({
-      from: `"Support" <${process.env.EMAIL_USER}>`,
+      from: `"Azzurri Support" <${process.env.EMAIL_USER}>`,
       to,
       subject,
       html,
@@ -27,5 +28,4 @@ const sendEmail = async ({ to, subject, html }) => {
   }
 };
 
-// ⚡ Export as named export
 module.exports = { sendEmail };

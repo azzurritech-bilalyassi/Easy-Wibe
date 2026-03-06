@@ -54,12 +54,13 @@ const UserSchema = new mongoose.Schema(
       enum: ["local", "google", "apple"],
       default: "local",
     },
-    subscription: {
-      plan: { type: String, default: "free" }, // free, basic, premium etc.
-      status: { type: String, default: "inactive" }, // active / inactive / canceled
-      startedAt: { type: Date }, // subscription start date
-      expiresAt: { type: Date }, // subscription end date
-    },
+    // subscription: {
+    //   plan: { type: String, default: "free" }, // free, basic, premium etc.
+    //   status: { type: String, default: "inactive" }, // active / inactive / canceled
+    //   startedAt: { type: Date }, // subscription start date
+    //   expiresAt: { type: Date }, // subscription end date
+    // },
+    subscription: { type: String, default: "free" },
   },
   {
     timestamps: true,

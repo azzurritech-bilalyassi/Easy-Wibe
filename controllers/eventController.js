@@ -82,34 +82,34 @@ const getAllEvents = async (req, res) => {
   }
 };
 
-const toggleFavorite = async (req, res) => {
-  try {
-    const event = await Event.findById(req.params.id);
-    const userId = req.user.id;
+// const toggleFavorite = async (req, res) => {
+//   try {
+//     const event = await Event.findById(req.params.id);
+//     const userId = req.user.id;
 
-    if (!event) return res.status(404).json({ message: "Event not found" });
+//     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    const index = event.favorites.indexOf(userId);
+//     const index = event.favorites.indexOf(userId);
 
-    if (index === -1) {
-      event.favorites.push(userId);
-    } else {
-      event.favorites.splice(index, 1);
-    }
+//     if (index === -1) {
+//       event.favorites.push(userId);
+//     } else {
+//       event.favorites.splice(index, 1);
+//     }
 
-    event.totalFavorites = event.favorites.length;
+//     event.totalFavorites = event.favorites.length;
 
-    await event.save();
+//     await event.save();
 
-    res.json({
-      message: "Favorite updated",
-      totalFavorites: event.totalFavorites,
-      isFavorite: event.favorites.includes(userId),
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
+//     res.json({
+//       message: "Favorite updated",
+//       totalFavorites: event.totalFavorites,
+//       isFavorite: event.favorites.includes(userId),
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
 
 // 🚀 PUBLISH EVENT
 const publishEvent = async (req, res) => {
@@ -153,12 +153,33 @@ const getAllLocations = async (req, res) => {
   }
 };
 
+// 🗑️ DELETE EVENT
+const deleteEvent = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const event = await Event.findById(id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    await event.deleteOne();
+
+    res.status(200).json({ message: "Event deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   createEvent,
   updateEvent,
+  deleteEvent,
   publishEvent,
   getPublishedEvents,
   getAllEvents,
-  toggleFavorite,
+  // toggleFavorite,
   getAllLocations,
 };

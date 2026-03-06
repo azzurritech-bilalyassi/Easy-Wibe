@@ -1,19 +1,5 @@
 const User = require("../models/User");
 
-const createUser = async (req, res) => {
-  try {
-    const { name, email, password, role } = req.body;
-    const existingUser = await User.findOne({ email });
-    if (existingUser)
-      return res.status(400).json({ message: "User already exists" });
-
-    const user = new User({ name, email, password, role });
-    await user.save();
-    res.status(201).json(user);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
 
 const getUsers = async (req, res) => {
   try {
@@ -57,7 +43,6 @@ const deleteUser = async (req, res) => {
 };
 
 module.exports = {
-  createUser,
   getUsers,
   getUser,
   updateUser,

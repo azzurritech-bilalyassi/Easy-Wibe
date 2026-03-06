@@ -38,12 +38,12 @@ const eventSchema = new mongoose.Schema(
       default: "draft",
     },
 
-    favorites: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
+    // favorites: [
+    //   {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "User",
+    //   },
+    // ],
 
     eventDate: {
       type: Date,

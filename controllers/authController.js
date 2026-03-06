@@ -102,7 +102,7 @@ const ForgotPassword = async (req, res) => {
     expiresIn: "15m",
   });
 
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
   await sendEmail({
     to: user.email,
