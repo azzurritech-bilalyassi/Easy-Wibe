@@ -3,6 +3,8 @@ node_modules/
 
 # env variables (secrets)
 .env
+*.json
+configs/easyvibe-notification-firebase-adminsdk-fbsvc-f2149d0bd5.json
 
 # logs
 *.log
@@ -10,5 +12,3 @@ node_modules/
 # OS files
 .DS_Store
 Thumbs.db
-*.json
-easyvibe-notification-firebase-adminsdk-fbsvc-f2149d0bd5.json
