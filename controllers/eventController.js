@@ -69,7 +69,7 @@ const updateEvent = async (req, res) => {
 
 const getAllEvents = async (req, res) => {
   try {
-    const events = await Event.find().sort({ eventDate: 1 });
+    const events = await Event.find().sort({ eventDate: -1 });
 
     if (!events || events.length === 0) {
       return res.status(404).json({ message: "No events found" });

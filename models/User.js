@@ -32,6 +32,9 @@ const UserSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    deviceToken: {
+      type: String,
+    },
     isBlocked: {
       type: Boolean,
       default: false,

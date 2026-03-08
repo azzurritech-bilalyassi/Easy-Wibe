@@ -13,7 +13,7 @@ const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
 
 const RegisterUser = async (req, res) => {
   try {
-    const { name, email, password, location, role } = req.body;
+    const { name, email, password, location, deviceToken, role } = req.body;
 
     const userRole = role && role === "admin" ? "admin" : "user";
 
@@ -30,6 +30,7 @@ const RegisterUser = async (req, res) => {
       name,
       email,
       password,
+      deviceToken,
       location: location || "",
       role: role || "user",
       provider: "local",
@@ -179,7 +180,7 @@ const CheckUserByEmail = async (req, res) => {
 
 const googleLogin = async (req, res) => {
   try {
-    const { token } = req.body;
+    const { token, deviceToken } = req.body;
 
     if (!token) {
       return res.status(400).json({ error: "id_token is required" });
@@ -220,6 +221,7 @@ const googleLogin = async (req, res) => {
         googleId: sub,
         name,
         email,
+        deviceToken,
         profileImage: savedImagePath,
         password: Math.random().toString(36).slice(-8),
         provider: "google",
@@ -250,7 +252,7 @@ const googleLogin = async (req, res) => {
 
 const appleLogin = async (req, res) => {
   try {
-    const token = req.body.token;
+    const { token, deviceToken } = req.body;
 
     if (!token) {
       return res.status(400).json({
@@ -293,6 +295,7 @@ const appleLogin = async (req, res) => {
       user = await User.create({
         appleId: sub,
         email: email || "",
+        deviceToken,
         name: name || email.split("@")[0],
         password: Math.random().toString(36).slice(-8),
         provider: "apple",
