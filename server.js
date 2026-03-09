@@ -2,6 +2,8 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const ConnectDB = require("./configs/db");
+const http = require("http");
+const { Server } = require("socket.io");
 const authRoutes = require("./routes/authRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const favoriteRoutes = require("./routes/favoriteRoutes");
@@ -9,8 +11,10 @@ const profileRoutes = require("./routes/profileRoutes");
 const quizRoutes = require("./routes/quizRoutes");
 const userRoutes = require("./routes/userRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const chatRoutes = require("./routes/chatRoutes");
 const swaggerUi = require("swagger-ui-express");
 const swaggerFile = require("./swagger-output.json");
+const { initializeSocket } = require("./sockets/chatSocket");
 
 dotenv.config();
 const app = express();
@@ -42,6 +46,23 @@ app.use("/api/favorites", favoriteRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/chat", chatRoutes);
+
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: [
+      "https://easywibe.azzurritech.com",
+      "https://easyvibe-admin.vercel.app",
+      "http://localhost:5173",
+    ],
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+initializeSocket(io);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
