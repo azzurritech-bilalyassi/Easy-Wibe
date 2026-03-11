@@ -65,11 +65,16 @@ const RegisterUser = async (req, res) => {
 
 const LoginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, deviceToken } = req.body;
 
     const user = await User.findOne({ email });
 
     if (user && (await user.matchPassword(password))) {
+      if (deviceToken) {
+        user.deviceToken = deviceToken;
+        await user.save();
+      }
+
       const token = generateToken(user);
       res.status(201).json({
         user,
@@ -206,6 +211,7 @@ const googleLogin = async (req, res) => {
 
     let user = await User.findOne({ email });
 
+
     if (user) {
       if (!user.googleId) {
         user.googleId = sub;
@@ -213,6 +219,10 @@ const googleLogin = async (req, res) => {
 
       if (!user.profileImage) {
         user.profileImage = savedImagePath;
+      }
+
+      if (deviceToken) {
+        user.deviceToken = deviceToken;
       }
 
       await user.save();
@@ -290,8 +300,14 @@ const appleLogin = async (req, res) => {
     // User find by appleId
     let user = await User.findOne({ appleId: sub });
 
+
     // Agar user exist nahi karta to create karo
-    if (!user) {
+    if (user) {
+      if (deviceToken) {
+        user.deviceToken = deviceToken;
+        await user.save();
+      }
+    } else {
       user = await User.create({
         appleId: sub,
         email: email || "",

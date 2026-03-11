@@ -41,7 +41,6 @@ const UserSchema = new mongoose.Schema(
     },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
-    moodResult: String,
     googleId: {
       type: String,
       unique: true,
@@ -64,6 +63,10 @@ const UserSchema = new mongoose.Schema(
     //   expiresAt: { type: Date }, // subscription end date
     // },
     subscription: { type: String, default: "free" },
+    mood: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,

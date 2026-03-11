@@ -4,11 +4,13 @@ const cors = require("cors");
 const ConnectDB = require("./configs/db");
 const http = require("http");
 const { Server } = require("socket.io");
+const path = require("path");
 const authRoutes = require("./routes/authRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const favoriteRoutes = require("./routes/favoriteRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const quizRoutes = require("./routes/quizRoutes");
+const moodRoutes = require("./routes/moodRoutes");
 const userRoutes = require("./routes/userRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const chatRoutes = require("./routes/chatRoutes");
@@ -31,6 +33,7 @@ app.use(
 app.use(express.json());
 const PORT = process.env.PORT || 5001;
 ConnectDB();
+app.use(express.static(path.join(__dirname, "public")));
 
 // app.get("/test", (req, res) => {
 //   res.json({ message: "Api is running" });
@@ -44,6 +47,7 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/favorites", favoriteRoutes);
 app.use("/api/quiz", quizRoutes);
+app.use("/api/moods", moodRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/chat", chatRoutes);

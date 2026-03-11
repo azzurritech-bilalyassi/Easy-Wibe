@@ -1,4 +1,4 @@
-// models/UserAnswer.js
+// models/Answer.js
 const mongoose = require("mongoose");
 
 const userAnswerSchema = new mongoose.Schema(
@@ -13,7 +13,7 @@ const userAnswerSchema = new mongoose.Schema(
       ref: "Question",
       required: true,
     },
-    selectedOption: {
+    optionId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
@@ -21,4 +21,4 @@ const userAnswerSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-module.exports = mongoose.model("UserAnswer", userAnswerSchema);
+module.exports = mongoose.model("Answer", userAnswerSchema);
