@@ -37,13 +37,24 @@ const eventSchema = new mongoose.Schema(
       enum: ["draft", "published"],
       default: "draft",
     },
+    isFavorite: {
+      userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
+      value: {
+        type: Boolean,
+        default: false,
+      },
+    },
 
-    // favorites: [
-    //   {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: "User",
-    //   },
-    // ],
+    favorites: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
 
     eventDate: {
       type: Date,

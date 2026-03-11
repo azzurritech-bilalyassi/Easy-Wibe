@@ -4,8 +4,10 @@ const Favorite = require("../models/Favorite");
 // Toggle favorite (add/remove)
 const toggleFavorite = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id;
     const { eventId } = req.body;
+
+    console.log(userId, eventId, "userId,eventId");
 
     const existing = await Favorite.findOne({ userId, eventId });
 
@@ -33,7 +35,7 @@ const toggleFavorite = async (req, res) => {
 // Get only user favorite events
 const getUserFavoriteEvents = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id;
 
     const favorites = await Favorite.find({ userId }).select("eventId");
     const favoriteEventIds = favorites.map((f) => f.eventId);
@@ -41,13 +43,6 @@ const getUserFavoriteEvents = async (req, res) => {
     if (!favoriteEventIds.length) return res.json([]);
 
     const events = await Event.find({ _id: { $in: favoriteEventIds } }).lean();
-
-    // events.forEach((e) => {
-    //   e.isFavorite = {
-    //     userId: userId.toString(),
-    //     value: true,
-    //   };
-    // });
 
     res.json(events);
   } catch (err) {

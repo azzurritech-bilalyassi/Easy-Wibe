@@ -1,4 +1,7 @@
 const Event = require("../models/Event");
+const Notification = require("../models/Notification");
+const User = require("../models/User");
+const sendPushNotification = require("../utils/sendPushNotification");
 
 // 🧑‍💼 CREATE EVENT (Draft by default)
 const createEvent = async (req, res) => {
@@ -27,6 +30,28 @@ const createEvent = async (req, res) => {
       eventDate,
       image: req.file.path, // ✅ image save ho rahi hai
     });
+
+    // const users = await User.find({
+    //   mood: event.moodCategory,
+    //   deviceToken: { $ne: null },
+    // });
+
+    // for (const user of users) {
+    //   // save notification in DB
+    //   await Notification.create({
+    //     userId: user._id,
+    //     title: "New Event For You",
+    //     message: `${event.title} is available now`,
+    //     eventId: event._id,
+    //   });
+
+    //   // send push notification
+    //   await sendPushNotification(
+    //     user.deviceToken,
+    //     "New Event For You",
+    //     `${event.title} is available now`,
+    //   );
+    // }
 
     res.status(201).json({
       message: "Event created successfully",
@@ -69,7 +94,7 @@ const updateEvent = async (req, res) => {
 
 const getAllEvents = async (req, res) => {
   try {
-    const events = await Event.find().sort({ eventDate: 1 });
+    const events = await Event.find().sort({ eventDate: -1 });
 
     if (!events || events.length === 0) {
       return res.status(404).json({ message: "No events found" });

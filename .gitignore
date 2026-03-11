@@ -3,6 +3,8 @@ node_modules/
 
 # env variables (secrets)
 .env
+*.json
+configs/opa-need-firebase-adminsdk-fbsvc-b14df77799.json
 
 # logs
 *.log
