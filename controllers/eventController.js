@@ -1,6 +1,8 @@
 const Event = require("../models/Event");
 const Notification = require("../models/Notification");
 const User = require("../models/User");
+const paginatedResponse = require("../utils/paginatedResponse");
+const getPagination = require("../utils/pagination");
 const sendPushNotification = require("../utils/sendPushNotification");
 
 // 🧑‍💼 CREATE EVENT (Draft by default)
@@ -16,9 +18,9 @@ const createEvent = async (req, res) => {
       eventDate,
     } = req.body;
 
-    if (!req.file) {
-      return res.status(400).json({ message: "Event image is required" });
-    }
+    // if (!req.file) {
+    //   return res.status(400).json({ message: "Event image is required" });
+    // }
 
     const event = await Event.create({
       title,
@@ -28,30 +30,38 @@ const createEvent = async (req, res) => {
       moodCategory,
       companyTags,
       eventDate,
-      image: req.file.path, // ✅ image save ho rahi hai
+      // image: req.file.path,
     });
 
     // const users = await User.find({
-    //   mood: event.moodCategory,
+    //   moods: event.moodCategory,
     //   deviceToken: { $ne: null },
     // });
 
-    // for (const user of users) {
-    //   // save notification in DB
-    //   await Notification.create({
-    //     userId: user._id,
-    //     title: "New Event For You",
-    //     message: `${event.title} is available now`,
-    //     eventId: event._id,
-    //   });
+    const users = await User.find({
+      deviceToken: { $ne: null },
+    });
 
-    //   // send push notification
-    //   await sendPushNotification(
-    //     user.deviceToken,
-    //     "New Event For You",
-    //     `${event.title} is available now`,
-    //   );
-    // }
+    for (const user of users) {
+      // save notification in DB
+      await Notification.create({
+        userId: user._id,
+        title: "New Event For You",
+        message: `${event.title} is available now`,
+        eventId: event._id,
+      });
+
+      // send push notification
+      const result = await sendPushNotification(
+        user.deviceToken,
+        "New Event For You",
+        `${event.title} is available now`,
+      );
+
+      if (result.success) {
+        console.log("Notification sent to:", user._id);
+      }
+    }
 
     res.status(201).json({
       message: "Event created successfully",
@@ -94,13 +104,25 @@ const updateEvent = async (req, res) => {
 
 const getAllEvents = async (req, res) => {
   try {
-    const events = await Event.find().sort({ eventDate: -1 });
+    const { page, limit, skip } = getPagination(req);
+
+    const search = req.query.search || "";
+
+    const query = {
+      title: { $regex: search, $options: "i" },
+    };
+
+    const events = await Event.find(query)
+      .skip(skip)
+      .limit(limit)
+      .sort({ eventDate: -1 });
+    const total = await Event.countDocuments(query);
 
     if (!events || events.length === 0) {
       return res.status(404).json({ message: "No events found" });
     }
 
-    res.status(200).json({ events });
+    res.status(200).json(paginatedResponse(events, total, page, limit));
   } catch (error) {
     console.error("Error fetching events:", error);
     res.status(500).json({ message: "Server error" });
@@ -154,11 +176,22 @@ const publishEvent = async (req, res) => {
 // 📱 USER APP — GET PUBLISHED EVENTS ONLY
 const getPublishedEvents = async (req, res) => {
   try {
-    const events = await Event.find({ status: "published" }).sort({
-      createdAt: -1,
-    });
+    let filter = { status: "published" };
 
-    res.json(events);
+    if (req.user) {
+      const user = await User.findById(req.user.id);
+
+      if (user && user.moods?.length) {
+        filter.moodCategory = { $in: user.moods };
+      }
+    }
+
+    const events = await Event.find(filter).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: events,
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

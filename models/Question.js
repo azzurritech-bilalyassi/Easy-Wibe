@@ -8,9 +8,18 @@ const optionSchema = new mongoose.Schema({
     required: true,
   },
 
-  points: {
-    type: Number,
-    default: 2,
+  // points: {
+  //   type: Number,
+  //   default: 2,
+  // },
+  weights: {
+    A: { type: Number, default: 0 },
+    B: { type: Number, default: 0 },
+    C: { type: Number, default: 0 },
+    D: { type: Number, default: 0 },
+    E: { type: Number, default: 0 },
+    F: { type: Number, default: 0 },
+    G: { type: Number, default: 0 },
   },
 });
 

@@ -10,7 +10,14 @@ const sendPushNotification = async (token, title, message) => {
   };
 
   try {
-    await admin.messaging().send(payload);
+    const response = await admin.messaging().send(payload);
+
+    console.log("Notification sent successfully:", response);
+
+    return {
+      success: true,
+      messageId: response,
+    };
   } catch (error) {
     console.log("Push Error:", error);
   }

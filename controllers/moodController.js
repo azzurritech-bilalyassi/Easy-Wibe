@@ -1,5 +1,6 @@
 const moodMap = require("../constants/moodMap");
 const alterEgoMap = require("../constants/alterEgoMap");
+const User = require("../models/User");
 
 const getAllMoods = (req, res) => {
   try {
@@ -18,4 +19,35 @@ const getAllMoods = (req, res) => {
   }
 };
 
-module.exports = { getAllMoods };
+const saveUserMoods = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { alterEgo } = req.body;
+
+    const moods = moodMap[alterEgo];
+
+    if (!moods) {
+      return res.status(400).json({
+        message: "Invalid alter ego",
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        moods,
+      },
+      { new: true },
+    );
+
+    res.json({
+      success: true,
+      messages: "User mood save",
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { getAllMoods, saveUserMoods };

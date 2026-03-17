@@ -1,10 +1,21 @@
 const User = require("../models/User");
-
+const paginatedResponse = require("../utils/paginatedResponse");
+const getPagination = require("../utils/pagination");
 
 const getUsers = async (req, res) => {
   try {
-    const users = await User.find();
-    res.json(users);
+    const { page, limit, skip } = getPagination(req);
+
+    const search = req.query.search || "";
+
+    const query = {
+      name: { $regex: search, $options: "i" },
+    };
+
+    const users = await User.find(query).skip(skip).limit(limit);
+    const total = await User.countDocuments(query);
+
+    res.json(paginatedResponse(users, total, page, limit));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -42,9 +53,24 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const saveDeviceToken = async (req, res) => {
+  const userId = req.user._id;
+  const { token } = req.body;
+
+  await User.findByIdAndUpdate(userId, {
+    deviceToken: token,
+  });
+
+  res.json({
+    success: true,
+    message: "Device token saved",
+  });
+};
+
 module.exports = {
   getUsers,
   getUser,
   updateUser,
   deleteUser,
+  saveDeviceToken,
 };
