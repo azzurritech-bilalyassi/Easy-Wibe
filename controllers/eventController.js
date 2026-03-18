@@ -33,6 +33,8 @@ const createEvent = async (req, res) => {
       // image: req.file.path,
     });
 
+    console.log(event, "event");
+
     // const users = await User.find({
     //   moods: event.moodCategory,
     //   deviceToken: { $ne: null },
