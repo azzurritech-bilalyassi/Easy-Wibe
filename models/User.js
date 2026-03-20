@@ -63,10 +63,10 @@ const UserSchema = new mongoose.Schema(
     //   expiresAt: { type: Date }, // subscription end date
     // },
     subscription: { type: String, default: "free" },
-    moods: {
-      type: [String],
-      default: [],
-    },
+    mood: {
+  type: [String],
+  default: [],
+},
   },
   {
     timestamps: true,

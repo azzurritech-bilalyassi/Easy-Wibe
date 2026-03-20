@@ -7,7 +7,7 @@ const {
   ResetPassword,
   CheckUserByEmail,
   googleLogin,
-  appleLogin,
+    appleLogin,
 } = require("../controllers/authController");
 const { auth } = require("../middleware/authMiddleware");
 

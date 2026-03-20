@@ -58,12 +58,12 @@ const eventSchema = new mongoose.Schema(
 
     eventDate: {
       type: Date,
-      // required: true,
+      required: true,
     },
-    // image: {
-    //   type: String,
-    //   required: true,
-    // },
+    image: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true },
 );

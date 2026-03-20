@@ -1,8 +1,6 @@
 const Event = require("../models/Event");
 const Notification = require("../models/Notification");
 const User = require("../models/User");
-const paginatedResponse = require("../utils/paginatedResponse");
-const getPagination = require("../utils/pagination");
 const sendPushNotification = require("../utils/sendPushNotification");
 
 // 🧑‍💼 CREATE EVENT (Draft by default)
@@ -18,9 +16,9 @@ const createEvent = async (req, res) => {
       eventDate,
     } = req.body;
 
-    // if (!req.file) {
-    //   return res.status(400).json({ message: "Event image is required" });
-    // }
+    if (!req.file) {
+      return res.status(400).json({ message: "Event image is required" });
+    }
 
     const event = await Event.create({
       title,
@@ -30,10 +28,8 @@ const createEvent = async (req, res) => {
       moodCategory,
       companyTags,
       eventDate,
-      // image: req.file.path,
+      image: req.file.path,
     });
-
-    console.log(event, "event");
 
     // const users = await User.find({
     //   moods: event.moodCategory,
@@ -60,8 +56,23 @@ const createEvent = async (req, res) => {
         `${event.title} is available now`,
       );
 
-      if (result.success) {
-        console.log("Notification sent to:", user._id);
+      // 🔥 safe check
+      if (result && result.success) {
+        console.log("Notification sent successfully:", result.messageId);
+      } else {
+        console.log("Notification failed for:", user._id);
+
+        if (
+          result &&
+          result.error &&
+          result.error.code === "messaging/registration-token-not-registered"
+        ) {
+          await User.findByIdAndUpdate(user._id, {
+            $unset: { deviceToken: "" },
+          });
+
+          console.log("Invalid token removed for user:", user._id);
+        }
       }
     }
 
@@ -106,25 +117,13 @@ const updateEvent = async (req, res) => {
 
 const getAllEvents = async (req, res) => {
   try {
-    const { page, limit, skip } = getPagination(req);
-
-    const search = req.query.search || "";
-
-    const query = {
-      title: { $regex: search, $options: "i" },
-    };
-
-    const events = await Event.find(query)
-      .skip(skip)
-      .limit(limit)
-      .sort({ eventDate: -1 });
-    const total = await Event.countDocuments(query);
+    const events = await Event.find().sort({ eventDate: -1 });
 
     if (!events || events.length === 0) {
       return res.status(404).json({ message: "No events found" });
     }
 
-    res.status(200).json(paginatedResponse(events, total, page, limit));
+    res.status(200).json({ events });
   } catch (error) {
     console.error("Error fetching events:", error);
     res.status(500).json({ message: "Server error" });
@@ -178,22 +177,11 @@ const publishEvent = async (req, res) => {
 // 📱 USER APP — GET PUBLISHED EVENTS ONLY
 const getPublishedEvents = async (req, res) => {
   try {
-    let filter = { status: "published" };
-
-    if (req.user) {
-      const user = await User.findById(req.user.id);
-
-      if (user && user.moods?.length) {
-        filter.moodCategory = { $in: user.moods };
-      }
-    }
-
-    const events = await Event.find(filter).sort({ createdAt: -1 });
-
-    res.json({
-      success: true,
-      data: events,
+    const events = await Event.find({ status: "published" }).sort({
+      createdAt: -1,
     });
+
+    res.json(events);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

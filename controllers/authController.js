@@ -13,7 +13,7 @@ const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
 
 const RegisterUser = async (req, res) => {
   try {
-    const { name, email, password, location, deviceToken, role } = req.body;
+    const { name, email, password, location, role ,deviceToken} = req.body;
 
     const userRole = role && role === "admin" ? "admin" : "user";
 
@@ -70,11 +70,12 @@ const LoginUser = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user && (await user.matchPassword(password))) {
-      if (deviceToken) {
+        
+        if (deviceToken) {
         user.deviceToken = deviceToken;
         await user.save();
       }
-
+        
       const token = generateToken(user);
       res.status(201).json({
         user,
@@ -211,7 +212,6 @@ const googleLogin = async (req, res) => {
 
     let user = await User.findOne({ email });
 
-
     if (user) {
       if (!user.googleId) {
         user.googleId = sub;
@@ -220,7 +220,7 @@ const googleLogin = async (req, res) => {
       if (!user.profileImage) {
         user.profileImage = savedImagePath;
       }
-
+      
       if (deviceToken) {
         user.deviceToken = deviceToken;
       }
@@ -300,14 +300,8 @@ const appleLogin = async (req, res) => {
     // User find by appleId
     let user = await User.findOne({ appleId: sub });
 
-
     // Agar user exist nahi karta to create karo
-    if (user) {
-      if (deviceToken) {
-        user.deviceToken = deviceToken;
-        await user.save();
-      }
-    } else {
+    if (!user) {
       user = await User.create({
         appleId: sub,
         email: email || "",

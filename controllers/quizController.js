@@ -3,7 +3,7 @@
 const Question = require("../models/Question");
 const Answer = require("../models/Answer");
 
-// ðŸ”¹ Get Questions
+// 🔹 Get Questions
 
 const getQuestions = async (req, res) => {
   try {
@@ -24,7 +24,7 @@ const getQuestions = async (req, res) => {
   }
 };
 
-// ðŸ”¥ FINAL SUBMIT (Single API)
+// 🔥 FINAL SUBMIT (Single API)
 const submitQuiz = async (req, res) => {
   try {
     const { answers } = req.body;
